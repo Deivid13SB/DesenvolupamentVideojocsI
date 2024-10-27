@@ -16,6 +16,7 @@ Item::Item() : Entity(EntityType::ITEM)
 Item::~Item() {}
 
 bool Item::Awake() {
+	position = Vector2D(196, 500);
 	return true;
 }
 
