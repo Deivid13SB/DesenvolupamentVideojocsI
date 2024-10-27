@@ -4,6 +4,7 @@
 #include <list>
 #include <vector>
 
+
 // L09: TODO 5: Add attributes to the property structure
 struct Properties
 {
@@ -135,6 +136,10 @@ public:
 public: 
     std::string mapFileName;
     std::string mapPath;
+    int GetMapWidth() const { return mapData.width; }
+    int GetMapHeight() const { return mapData.height; }
+    int GetTileWidth() const { return mapData.tileWidth; }
+    int GetTileHeight() const { return mapData.tileHeight; }
 
 private:
     bool mapLoaded;

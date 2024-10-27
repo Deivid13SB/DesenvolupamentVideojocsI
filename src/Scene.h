@@ -33,6 +33,11 @@ public:
 	bool CleanUp();
 
 private:
+
+	void CameraFollow();
+	int cameraCenterX = 400;
+	int cameraCenterY = 300;
+
 	SDL_Texture* img;
 
 	//L03: TODO 3b: Declare a Player attribute
