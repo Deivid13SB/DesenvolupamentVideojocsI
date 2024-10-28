@@ -27,7 +27,7 @@ bool Player::Awake() {
 bool Player::Start() {
 
 	//L03: TODO 2: Initialize Player parameters
-	texture = Engine::GetInstance().textures.get()->Load("Assets/Textures/idle.png");
+	texture = Engine::GetInstance().textures.get()->Load("Assets/Textures/player.png");
 
 	// L08 TODO 5: Add physics to the player - initialize physics body
 	Engine::GetInstance().textures.get()->GetSize(texture, texW, texH);
