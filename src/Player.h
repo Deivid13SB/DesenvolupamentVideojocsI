@@ -6,6 +6,7 @@
 
 struct SDL_Texture;
 
+
 class Player : public Entity
 {
 public:
