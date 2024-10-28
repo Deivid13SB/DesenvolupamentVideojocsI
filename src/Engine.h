@@ -45,6 +45,11 @@ public:
 		return dt;
 	}
 
+	void ToggleFPSLimit();
+	bool isFPSLimited;
+	int normalFPS;
+	int limitedFPS;
+
 private:
 
 	// Private constructor to prevent instantiation

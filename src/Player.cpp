@@ -11,6 +11,7 @@
 Player::Player() : Entity(EntityType::PLAYER)
 {
 	name = "Player";
+	godMode = false;
 }
 
 Player::~Player() {
@@ -81,6 +82,18 @@ bool Player::Update(float dt)
 	position.setY(METERS_TO_PIXELS(pbodyPos.p.y) - texH / 2);
 
 	Engine::GetInstance().render.get()->DrawTexture(texture, (int)position.getX(), (int)position.getY());
+
+	if (Engine::GetInstance().input.get()->GetKey(SDL_SCANCODE_F10) == KEY_DOWN)
+	{
+		godMode = !godMode;
+	}
+
+	if (godMode)
+	{
+		// Implementar lógica de invencibilidad
+		// Por ejemplo, ignorar colisiones o daño
+	}
+
 	return true;
 }
 
@@ -108,6 +121,11 @@ void Player::OnCollision(PhysBody* physA, PhysBody* physB) {
 		break;
 	default:
 		break;
+	}
+
+	if (!godMode)
+	{
+		// Lógica de colisión normal
 	}
 }
 

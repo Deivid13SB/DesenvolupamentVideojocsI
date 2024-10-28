@@ -26,6 +26,10 @@ Engine::Engine() {
     lastSecFrameTime = PerfTimer();
     frames = 0;
 
+    isFPSLimited = false;
+    normalFPS = 60;
+    limitedFPS = 30;
+
     // L4: TODO 1: Add the EntityManager Module to the Engine
     
     // Modules
@@ -140,9 +144,22 @@ bool Engine::Update() {
     if (ret == true)
         ret = PostUpdate();
 
+    if (input->GetKey(SDL_SCANCODE_F11) == KEY_DOWN)
+    {
+        ToggleFPSLimit();
+    }
+
     FinishUpdate();
     return ret;
 }
+
+void Engine::ToggleFPSLimit()
+{
+    isFPSLimited = !isFPSLimited;
+    maxFrameDuration = isFPSLimited ? 1000 / limitedFPS : 1000 / normalFPS;
+}
+
+
 
 // Called before quitting
 bool Engine::CleanUp() {
