@@ -16,26 +16,22 @@ Player::Player() : Entity(EntityType::PLAYER)
 	spawnPoint = Vector2D(96, 500);
 }
 
-void Player::Die() {
-	if (!godMode) {
-		isDead = true;
-		Respawn();
-	}
-}
 
 void Player::Respawn() {
-	position = spawnPoint;
+    LOG("Respawning player at initial position");
+    position = spawnPoint;
 
-	if (pbody != nullptr) {
-		pbody->body->SetTransform(b2Vec2(PIXEL_TO_METERS(spawnPoint.getX()),
-			PIXEL_TO_METERS(spawnPoint.getY())), 0);
-		pbody->body->SetLinearVelocity(b2Vec2(0, 0));
-	}
+    if (pbody != nullptr) {
+        // Ajusta la posición del cuerpo físico para que el "pie" del jugador esté en el suelo
+        float yOffset = texH / 2; // Ajusta según el tamaño del sprite
+        pbody->body->SetTransform(b2Vec2(PIXEL_TO_METERS(spawnPoint.getX()),
+                                          PIXEL_TO_METERS(spawnPoint.getY() + yOffset)), 0);
+        pbody->body->SetLinearVelocity(b2Vec2(0, 0));
+    }
 
-	isDead = false;
-	isJumping = false;
+    isDead = false;
+    isJumping = false;
 }
-
 Player::~Player() {
 
 }
@@ -64,6 +60,8 @@ bool Player::Start() {
 
 	//initialize audio effect
 	pickCoinFxId = Engine::GetInstance().audio.get()->LoadFx("Assets/Audio/Fx/retro-video-game-coin-pickup-38299.ogg");
+
+	isDead = false;
 
 	return true;
 }
@@ -116,6 +114,32 @@ bool Player::Update(float dt)
 		// Por ejemplo, ignorar colisiones o daño
 	}
 
+	if (isDead)
+	{
+		pbody->body->SetTransform({ PIXEL_TO_METERS(96),PIXEL_TO_METERS(500) }, 0);
+	}
+	else
+	{
+		pbody->body->SetLinearVelocity(velocity);
+	}
+
+	if (godMode)
+	{
+		if (Engine::GetInstance().input.get()->GetKey(SDL_SCANCODE_SPACE) == KEY_REPEAT)
+		{
+			velocity.y = -4;
+		}
+		else if (Engine::GetInstance().input.get()->GetKey(SDL_SCANCODE_S) == KEY_REPEAT)
+		{
+			velocity.y = 4;
+		}
+		else
+		{
+			velocity.y = 0;
+		}
+		pbody->body->SetLinearVelocity(velocity);
+	}
+
 	return true;
 }
 
@@ -140,16 +164,16 @@ void Player::OnCollision(PhysBody* physA, PhysBody* physB) {
 		break;
 	case ColliderType::SPIKE:
 		LOG("Collision SPIKE");
-		Die();
+		if (!godMode)
+		{
+			isDead = true;
+		}
 		break;
 	default:
 		break;
 	}
 
-	if (!godMode)
-	{
-		// Lógica de colisión normal
-	}
+	
 }
 
 void Player::OnCollisionEnd(PhysBody* physA, PhysBody* physB)
@@ -164,7 +188,7 @@ void Player::OnCollisionEnd(PhysBody* physA, PhysBody* physB)
 		Engine::GetInstance().audio.get()->PlayFx(pickCoinFxId);
 		break;
 	case ColliderType::SPIKE:
-		LOG("End Collision SPIKE");
+		LOG("Is dead");
 		break;
 	default:
 		break;

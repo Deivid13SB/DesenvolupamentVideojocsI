@@ -254,13 +254,6 @@ bool Map::Load(std::string path, std::string fileName)
                                     else if (gid == 402)
                                     {
                                         c1->ctype = ColliderType::SPIKE;
-                                        b2Fixture* fixture = c1->body->GetFixtureList();
-                                        if (fixture)
-                                        {
-                                            fixture->SetSensor(true);
-                                            fixture->SetFriction(0.0f);
-                                            fixture->SetRestitution(0.0f);
-                                        }
                                     }
                                 }
                             }

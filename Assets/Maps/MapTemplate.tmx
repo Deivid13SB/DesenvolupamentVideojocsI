@@ -8063,6 +8063,7 @@
  </layer>
  <layer id="2" name="Collisions" width="350" height="23">
   <properties>
+   <property name="Collision" type="bool" value="true"/>
    <property name="Draw" type="bool" value="false"/>
   </properties>
   <data>

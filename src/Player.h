@@ -40,7 +40,6 @@ public:
 	Vector2D spawnPoint;
 	bool isDead;
 
-	void Die();
 	void Respawn();
 
 	//Audio fx
