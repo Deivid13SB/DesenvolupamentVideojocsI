@@ -16,6 +16,8 @@ Scene::Scene() : Module()
 {
 	name = "scene";
 	img = nullptr;
+	uiMenuTexture = nullptr;
+	showUIMenu = false;
 }
 
 // Destructor
@@ -43,6 +45,8 @@ bool Scene::Start()
 	//L06 TODO 3: Call the function to load the map. 
 	Engine::GetInstance().map->Load("Assets/Maps/", "MapTemplate.tmx");
 
+	uiMenuTexture = Engine::GetInstance().textures.get()->Load("Assets/Textures/UIDebug.png");
+
 	return true;
 }
 
@@ -57,19 +61,29 @@ bool Scene::Update(float dt)
 {
 	CameraFollow();
 	////L03 TODO 3: Make the camera movement independent of framerate
-	//float camSpeed = 1;
+	/*float camSpeed = 1;
 
-	//if(Engine::GetInstance().input.get()->GetKey(SDL_SCANCODE_UP) == KEY_REPEAT)
-	//	Engine::GetInstance().render.get()->camera.y -= ceil(camSpeed * dt);
+	if(Engine::GetInstance().input.get()->GetKey(SDL_SCANCODE_UP) == KEY_REPEAT)
+		Engine::GetInstance().render.get()->camera.y -= ceil(camSpeed * dt);
 
-	//if(Engine::GetInstance().input.get()->GetKey(SDL_SCANCODE_DOWN) == KEY_REPEAT)
-	//	Engine::GetInstance().render.get()->camera.y += ceil(camSpeed * dt);
+	if(Engine::GetInstance().input.get()->GetKey(SDL_SCANCODE_DOWN) == KEY_REPEAT)
+		Engine::GetInstance().render.get()->camera.y += ceil(camSpeed * dt);
 
-	//if(Engine::GetInstance().input.get()->GetKey(SDL_SCANCODE_LEFT) == KEY_REPEAT)
-	//	Engine::GetInstance().render.get()->camera.x -= ceil(camSpeed * dt);
+	if(Engine::GetInstance().input.get()->GetKey(SDL_SCANCODE_LEFT) == KEY_REPEAT)
+		Engine::GetInstance().render.get()->camera.x -= ceil(camSpeed * dt);
 
-	//if(Engine::GetInstance().input.get()->GetKey(SDL_SCANCODE_RIGHT) == KEY_REPEAT)
-	//	Engine::GetInstance().render.get()->camera.x += ceil(camSpeed * dt);
+	if(Engine::GetInstance().input.get()->GetKey(SDL_SCANCODE_RIGHT) == KEY_REPEAT)
+		Engine::GetInstance().render.get()->camera.x += ceil(camSpeed * dt);*/
+
+	if (Engine::GetInstance().input.get()->GetKey(SDL_SCANCODE_H) == KEY_DOWN)
+	{
+		ToggleUIMenu();
+	}
+
+	if (showUIMenu)
+	{
+		DrawUIMenu();
+	}
 
 	return true;
 }
@@ -123,12 +137,43 @@ bool Scene::PostUpdate()
 	return ret;
 }
 
+void Scene::ToggleUIMenu()
+{
+	showUIMenu = !showUIMenu;
+}
+
+void Scene::DrawUIMenu()
+{
+	if (uiMenuTexture != nullptr)
+	{
+		int windowWidth, windowHeight;
+		Engine::GetInstance().window.get()->GetWindowSize(windowWidth, windowHeight);
+
+		// Obtener las dimensiones de la textura
+		int textureWidth, textureHeight;
+		Engine::GetInstance().textures.get()->GetSize(uiMenuTexture, textureWidth, textureHeight);
+
+		// Calcular la posición en la esquina superior derecha
+		int x = windowWidth - textureWidth;
+		int y = 0;
+
+		// Dibujar el menú UI
+		Engine::GetInstance().render.get()->DrawTexture(uiMenuTexture, x, y);
+	}
+}
+
 // Called before quitting
 bool Scene::CleanUp()
 {
 	LOG("Freeing scene");
 
 	SDL_DestroyTexture(img);
+
+	if (uiMenuTexture != nullptr)
+	{
+		Engine::GetInstance().textures.get()->UnLoad(uiMenuTexture);
+		uiMenuTexture = nullptr;
+	}
 
 	return true;
 }

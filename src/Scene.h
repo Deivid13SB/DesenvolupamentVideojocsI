@@ -2,6 +2,7 @@
 
 #include "Module.h"
 #include "Player.h"
+#include "SDL2/SDL.h"
 
 struct SDL_Texture;
 
@@ -35,6 +36,9 @@ public:
 private:
 
 	void CameraFollow();
+	void ToggleUIMenu();
+	void DrawUIMenu();
+
 	int cameraCenterX = 400;
 	int cameraCenterY = 300;
 
@@ -42,4 +46,7 @@ private:
 
 	//L03: TODO 3b: Declare a Player attribute
 	Player* player;
+
+	SDL_Texture* uiMenuTexture;
+	bool showUIMenu;
 };
