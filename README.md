@@ -18,6 +18,7 @@ We made a simple plataform game, the ame consist in a map with obstacle and the 
 ## Team members
 
 _David Subirats Bonet_
+
 _Mario Torrents Rodriguez_
 
 * Code
