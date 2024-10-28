@@ -233,6 +233,7 @@ bool Map::Load(std::string path, std::string fileName)
 
     }
 
+    
     mapLoaded = ret;
     return ret;
 }
@@ -264,5 +265,6 @@ bool Map::LoadProperties(pugi::xml_node& node, Properties& properties)
 
     return ret;
 }
+
 
 

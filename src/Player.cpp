@@ -12,6 +12,28 @@ Player::Player() : Entity(EntityType::PLAYER)
 {
 	name = "Player";
 	godMode = false;
+	isDead = false;
+	spawnPoint = Vector2D(96, 500);
+}
+
+void Player::Die() {
+	if (!godMode) {
+		isDead = true;
+		Respawn();
+	}
+}
+
+void Player::Respawn() {
+	position = spawnPoint;
+
+	if (pbody != nullptr) {
+		pbody->body->SetTransform(b2Vec2(PIXEL_TO_METERS(spawnPoint.getX()),
+			PIXEL_TO_METERS(spawnPoint.getY())), 0);
+		pbody->body->SetLinearVelocity(b2Vec2(0, 0));
+	}
+
+	isDead = false;
+	isJumping = false;
 }
 
 Player::~Player() {
@@ -116,8 +138,9 @@ void Player::OnCollision(PhysBody* physA, PhysBody* physB) {
 	case ColliderType::ITEM:
 		LOG("Collision ITEM");
 		break;
-	case ColliderType::UNKNOWN:
-		LOG("Collision UNKNOWN");
+	case ColliderType::SPIKE:
+		LOG("Collision SPIKE");
+		Die();
 		break;
 	default:
 		break;
@@ -140,8 +163,8 @@ void Player::OnCollisionEnd(PhysBody* physA, PhysBody* physB)
 		LOG("End Collision ITEM");
 		Engine::GetInstance().audio.get()->PlayFx(pickCoinFxId);
 		break;
-	case ColliderType::UNKNOWN:
-		LOG("End Collision UNKNOWN");
+	case ColliderType::SPIKE:
+		LOG("End Collision SPIKE");
 		break;
 	default:
 		break;

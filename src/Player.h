@@ -37,6 +37,12 @@ public:
 
 	bool godMode;
 
+	Vector2D spawnPoint;
+	bool isDead;
+
+	void Die();
+	void Respawn();
+
 	//Audio fx
 	int pickCoinFxId;
 
