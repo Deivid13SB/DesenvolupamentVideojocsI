@@ -8,33 +8,37 @@
 #include "Log.h"
 #include "Physics.h"
 
-Player::Player() : Entity(EntityType::PLAYER)
+Player::Player() :
+	Entity(EntityType::PLAYER),
+	spawnPoint(96, 500)  // Inicializar spawnPoint aquí
 {
 	name = "Player";
 	godMode = false;
 	isDead = false;
-	spawnPoint = Vector2D(96, 500);
 }
 
-void Player::Respawn() {
+void Player::Respawn()
+{
 	LOG("Respawning player at initial position");
 
-	// Desactivar temporalmente el cuerpo
-	if (pbody != nullptr && pbody->body != nullptr) {
-		// Resetear la posición
-		position = spawnPoint;
-
-		// Resetear la velocidad y posición del cuerpo físico
-		pbody->body->SetLinearVelocity(b2Vec2(0, 0));
+	// Usar el spawnPoint definido en el constructor
+	if (pbody != nullptr)
+	{
+		// Resetear la posición del cuerpo físico al spawn point original
 		pbody->body->SetTransform(
 			b2Vec2(PIXEL_TO_METERS(spawnPoint.getX()),
 				PIXEL_TO_METERS(spawnPoint.getY())), 0);
+
+		// Detener cualquier movimiento
+		pbody->body->SetLinearVelocity(b2Vec2(0, 0));
 	}
 
-	// Resetear estados del jugador
+	// Resetear la posición de la entidad
+	position = spawnPoint;
+
+	// Resetear estados
 	isDead = false;
 	isJumping = false;
-	active = true;
 }
 
 Player::~Player() {
@@ -172,7 +176,7 @@ void Player::OnCollision(PhysBody* physA, PhysBody* physB) {
 		if (!godMode)
 		{
 			isDead = true;
-			Respawn();
+			Respawn(); // Llamar directamente al método Respawn
 		}
 		break;
 

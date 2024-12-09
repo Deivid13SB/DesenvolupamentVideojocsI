@@ -23,6 +23,8 @@ public:
 
 	bool CleanUp();
 
+	const Vector2D spawnPoint; // Hacer el spawnPoint constante
+
 	// L08 TODO 6: Define OnCollision function for the player. 
 	void OnCollision(PhysBody* physA, PhysBody* physB);
 
@@ -37,7 +39,6 @@ public:
 
 	bool godMode;
 
-	Vector2D spawnPoint;
 	bool isDead;
 
 	void Respawn();
