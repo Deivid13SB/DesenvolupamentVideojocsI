@@ -16,22 +16,27 @@ Player::Player() : Entity(EntityType::PLAYER)
 	spawnPoint = Vector2D(96, 500);
 }
 
-
 void Player::Respawn() {
-    LOG("Respawning player at initial position");
-    position = spawnPoint;
+	LOG("Respawning player at initial position");
 
-    if (pbody != nullptr) {
-        // Ajusta la posición del cuerpo físico para que el "pie" del jugador esté en el suelo
-        float yOffset = texH / 2; // Ajusta según el tamaño del sprite
-        pbody->body->SetTransform(b2Vec2(PIXEL_TO_METERS(spawnPoint.getX()),
-                                          PIXEL_TO_METERS(spawnPoint.getY() + yOffset)), 0);
-        pbody->body->SetLinearVelocity(b2Vec2(0, 0));
-    }
+	// Desactivar temporalmente el cuerpo
+	if (pbody != nullptr && pbody->body != nullptr) {
+		// Resetear la posición
+		position = spawnPoint;
 
-    isDead = false;
-    isJumping = false;
+		// Resetear la velocidad y posición del cuerpo físico
+		pbody->body->SetLinearVelocity(b2Vec2(0, 0));
+		pbody->body->SetTransform(
+			b2Vec2(PIXEL_TO_METERS(spawnPoint.getX()),
+				PIXEL_TO_METERS(spawnPoint.getY())), 0);
+	}
+
+	// Resetear estados del jugador
+	isDead = false;
+	isJumping = false;
+	active = true;
 }
+
 Player::~Player() {
 
 }
@@ -44,9 +49,11 @@ bool Player::Awake() {
 }
 
 bool Player::Start() {
-
 	//L03: TODO 2: Initialize Player parameters
 	texture = Engine::GetInstance().textures.get()->Load("Assets/Textures/player.png");
+
+	// Establecer el punto de spawn inicial
+	spawnPoint = position;
 
 	// L08 TODO 5: Add physics to the player - initialize physics body
 	Engine::GetInstance().textures.get()->GetSize(texture, texW, texH);
@@ -65,6 +72,7 @@ bool Player::Start() {
 
 	return true;
 }
+
 
 bool Player::Update(float dt)
 {
@@ -156,24 +164,25 @@ void Player::OnCollision(PhysBody* physA, PhysBody* physB) {
 	{
 	case ColliderType::PLATFORM:
 		LOG("Collision PLATFORM");
-		//reset the jump flag when touching the ground
 		isJumping = false;
 		break;
-	case ColliderType::ITEM:
-		LOG("Collision ITEM");
-		break;
+
 	case ColliderType::SPIKE:
 		LOG("Collision SPIKE");
 		if (!godMode)
 		{
 			isDead = true;
+			Respawn();
 		}
 		break;
+
+	case ColliderType::ITEM:
+		LOG("Collision ITEM");
+		break;
+
 	default:
 		break;
 	}
-
-	
 }
 
 void Player::OnCollisionEnd(PhysBody* physA, PhysBody* physB)

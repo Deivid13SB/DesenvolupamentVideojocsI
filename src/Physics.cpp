@@ -335,6 +335,12 @@ bool Physics::CleanUp()
 	return true;
 }
 
+void Physics::DestroyBody(PhysBody* body) {
+	if (body != nullptr && body->body != nullptr) {
+		world->DestroyBody(body->body);
+	}
+}
+
 // Callback function to collisions with Box2D
 void Physics::BeginContact(b2Contact* contact)
 {
