@@ -17,40 +17,28 @@ Player::Player() :
 	isDead = false;
 	position = Vector2D(96, 500);
 }
+
 void Player::Respawn() {
 	LOG("Respawning player at initial position");
-
-	// Reset position to spawn point
 	position = spawnPoint;
 
-	// Delete old physics body
-	if (pbody != nullptr) {
-		Engine::GetInstance().physics.get()->world->DestroyBody(pbody->body);
-		delete pbody;
-		pbody = nullptr;
+	if (pbody == nullptr) {
+		LOG("Warning: Trying to respawn player with null physics body");
+		return;
 	}
 
-	// Create new physics body
-	pbody = Engine::GetInstance().physics.get()->CreateCircle(
-		(int)position.getX(),
-		(int)position.getY(),
-		texW / 2,
-		bodyType::DYNAMIC
-	);
+	if (pbody->body == nullptr) {
+		LOG("Warning: Physics body is invalid");
+		return;
+	}
 
-	// Set physics body properties
-	pbody->listener = this;
-	pbody->ctype = ColliderType::PLAYER;
-	pbody->body->SetFixedRotation(true);
+	float yOffset = texH / 2;
+	pbody->body->SetTransform(b2Vec2(PIXEL_TO_METERS(spawnPoint.getX()),
+		PIXEL_TO_METERS(spawnPoint.getY() + yOffset)), 0);
 	pbody->body->SetLinearVelocity(b2Vec2(0, 0));
-	pbody->body->SetEnabled(true);
 
-	// Reset player state
 	isDead = false;
 	isJumping = false;
-
-	// Make sure input handling is enabled
-	active = true;
 }
 
 Player::~Player() {
