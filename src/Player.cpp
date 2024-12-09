@@ -10,35 +10,47 @@
 
 Player::Player() :
 	Entity(EntityType::PLAYER),
-	spawnPoint(96, 500)  // Inicializar spawnPoint aquí
+	spawnPoint(96, 500)  // Inicializar spawnPoint en la lista de inicialización
 {
 	name = "Player";
 	godMode = false;
 	isDead = false;
+	position = Vector2D(96, 500);
 }
-
-void Player::Respawn()
-{
+void Player::Respawn() {
 	LOG("Respawning player at initial position");
 
-	// Usar el spawnPoint definido en el constructor
-	if (pbody != nullptr)
-	{
-		// Resetear la posición del cuerpo físico al spawn point original
-		pbody->body->SetTransform(
-			b2Vec2(PIXEL_TO_METERS(spawnPoint.getX()),
-				PIXEL_TO_METERS(spawnPoint.getY())), 0);
-
-		// Detener cualquier movimiento
-		pbody->body->SetLinearVelocity(b2Vec2(0, 0));
-	}
-
-	// Resetear la posición de la entidad
+	// Reset position to spawn point
 	position = spawnPoint;
 
-	// Resetear estados
+	// Delete old physics body
+	if (pbody != nullptr) {
+		Engine::GetInstance().physics.get()->world->DestroyBody(pbody->body);
+		delete pbody;
+		pbody = nullptr;
+	}
+
+	// Create new physics body
+	pbody = Engine::GetInstance().physics.get()->CreateCircle(
+		(int)position.getX(),
+		(int)position.getY(),
+		texW / 2,
+		bodyType::DYNAMIC
+	);
+
+	// Set physics body properties
+	pbody->listener = this;
+	pbody->ctype = ColliderType::PLAYER;
+	pbody->body->SetFixedRotation(true);
+	pbody->body->SetLinearVelocity(b2Vec2(0, 0));
+	pbody->body->SetEnabled(true);
+
+	// Reset player state
 	isDead = false;
 	isJumping = false;
+
+	// Make sure input handling is enabled
+	active = true;
 }
 
 Player::~Player() {
@@ -53,11 +65,9 @@ bool Player::Awake() {
 }
 
 bool Player::Start() {
+
 	//L03: TODO 2: Initialize Player parameters
 	texture = Engine::GetInstance().textures.get()->Load("Assets/Textures/player.png");
-
-	// Establecer el punto de spawn inicial
-	spawnPoint = position;
 
 	// L08 TODO 5: Add physics to the player - initialize physics body
 	Engine::GetInstance().textures.get()->GetSize(texture, texW, texH);
@@ -76,7 +86,6 @@ bool Player::Start() {
 
 	return true;
 }
-
 
 bool Player::Update(float dt)
 {
@@ -168,25 +177,24 @@ void Player::OnCollision(PhysBody* physA, PhysBody* physB) {
 	{
 	case ColliderType::PLATFORM:
 		LOG("Collision PLATFORM");
+		//reset the jump flag when touching the ground
 		isJumping = false;
 		break;
-
-	case ColliderType::SPIKE:
+	case ColliderType::ITEM:
+		LOG("Collision ITEM");
+		break;
+		case ColliderType::SPIKE:
 		LOG("Collision SPIKE");
 		if (!godMode)
 		{
 			isDead = true;
-			Respawn(); // Llamar directamente al método Respawn
+			Respawn(); // Call respawn immediately when player dies
 		}
-		break;
-
-	case ColliderType::ITEM:
-		LOG("Collision ITEM");
-		break;
-
 	default:
 		break;
 	}
+
+	
 }
 
 void Player::OnCollisionEnd(PhysBody* physA, PhysBody* physB)
