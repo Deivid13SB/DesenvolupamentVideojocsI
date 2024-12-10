@@ -46,6 +46,8 @@ bool Scene::Start()
 	Engine::GetInstance().map->Load("Assets/Maps/", "MapTemplate.tmx");
 
 	uiMenuTexture = Engine::GetInstance().textures.get()->Load("Assets/Textures/UIDebug.png");
+	
+	Engine::GetInstance().audio->PlayMusic("Assets/Audio/Music/background.ogg");
 
 	return true;
 }

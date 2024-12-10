@@ -69,6 +69,7 @@ bool Player::Start() {
 
 	//initialize audio effect
 	pickCoinFxId = Engine::GetInstance().audio.get()->LoadFx("Assets/Audio/Fx/retro-video-game-coin-pickup-38299.ogg");
+	jumpFxId = Engine::GetInstance().audio->LoadFx("Assets/Audio/Fx/jump.ogg");
 
 	isDead = false;
 
@@ -95,6 +96,7 @@ bool Player::Update(float dt)
 		// Apply an initial upward force
 		pbody->body->ApplyLinearImpulseToCenter(b2Vec2(0, -jumpForce), true);
 		isJumping = true;
+		Engine::GetInstance().audio->PlayFx(jumpFxId);
 	}
 
 	// If the player is jumpling, we don't want to apply gravity, we use the current velocity prduced by the jump
