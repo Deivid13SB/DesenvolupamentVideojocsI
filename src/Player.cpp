@@ -19,26 +19,7 @@ Player::Player() :
 }
 
 void Player::Respawn() {
-	LOG("Respawning player at initial position");
-	position = spawnPoint;
-
-	if (pbody == nullptr) {
-		LOG("Warning: Trying to respawn player with null physics body");
-		return;
-	}
-
-	if (pbody->body == nullptr) {
-		LOG("Warning: Physics body is invalid");
-		return;
-	}
-
-	float yOffset = texH / 2;
-	pbody->body->SetTransform(b2Vec2(PIXEL_TO_METERS(spawnPoint.getX()),
-		PIXEL_TO_METERS(spawnPoint.getY() + yOffset)), 0);
-	pbody->body->SetLinearVelocity(b2Vec2(0, 0));
-
-	isDead = false;
-	isJumping = false;
+	Vector2D(96, 500) = spawnPoint;
 }
 
 Player::~Player() {
@@ -128,6 +109,7 @@ bool Player::Update(float dt)
 	if (isDead)
 	{
 		pbody->body->SetTransform({ PIXEL_TO_METERS(96),PIXEL_TO_METERS(500) }, 0);
+		isDead = false;
 	}
 	else
 	{
@@ -173,13 +155,14 @@ void Player::OnCollision(PhysBody* physA, PhysBody* physB) {
 	case ColliderType::ITEM:
 		LOG("Collision ITEM");
 		break;
-		case ColliderType::SPIKE:
+	case ColliderType::SPIKE:
 		LOG("Collision SPIKE");
 		if (!godMode)
 		{
 			isDead = true;
-			Respawn(); // Call respawn immediately when player dies
+			Respawn();// Call respawn immediately when player dies
 		}
+
 	default:
 		break;
 	}
