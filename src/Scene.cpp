@@ -60,6 +60,18 @@ bool Scene::Start()
 		uiMenuTexture = Engine::GetInstance().textures.get()->Load("Assets/Textures/UIDebug.png");
 		Engine::GetInstance().audio->PlayMusic("Assets/Audio/Music/background.ogg");
 	}
+	//L06 TODO 3: Call the function to load the map. 
+	Engine::GetInstance().map->Load("Assets/Maps/", "MapTemplate.tmx");
+
+	uiMenuTexture = Engine::GetInstance().textures.get()->Load("Assets/Textures/UIDebug.png");
+	
+	Engine::GetInstance().audio->PlayMusic("Assets/Audio/Music/background.ogg");
+
+	heartTexture = Engine::GetInstance().textures.get()->Load("Assets/Textures/heart.png");
+	if (heartTexture == nullptr) {
+		LOG("Failed to load heart texture!");
+	}
+
 	return true;
 }
 
@@ -120,6 +132,13 @@ bool Scene::Update(float dt)
 		ToggleUIMenu();
 	}
 
+	if (player->IsGameOver()) {
+		// Aquí puedes añadir lo que quieras que suceda cuando se acabe el juego
+		// Por ejemplo:
+		LOG("GAME OVER - No more lives!");
+		return false;
+	}
+
 	if (showUIMenu)
 	{
 		DrawUIMenu();
@@ -134,7 +153,40 @@ bool Scene::Update(float dt)
 		
 	}
 
+	DrawHearts();
+
 	return true;
+}
+
+void Scene::DrawHearts() {
+
+	LOG("Drawing hearts. Player lives: %d", player->lives);
+	LOG("Heart texture pointer: %p", heartTexture);
+	if (heartTexture == nullptr || player == nullptr) return;
+
+	// Obtener dimensiones de la ventana
+	int windowWidth, windowHeight;
+	Engine::GetInstance().window.get()->GetWindowSize(windowWidth, windowHeight);
+
+	// Tamaño de cada corazón
+	const int heartSize = 32; // Ajusta este valor según el tamaño de tu textura
+	const int padding = 10;   // Espacio entre corazones
+
+	// Posición base para los corazones (esquina superior derecha)
+	int baseX = windowWidth - ((heartSize + padding) * 3);
+	int baseY = 100;
+
+	// Dibujar los corazones basados en las vidas del jugador
+	for (int i = 0; i < player->lives; i++) {
+		Engine::GetInstance().render.get()->DrawTexture(
+			heartTexture,
+			baseX + (i * (heartSize + padding)),
+			baseY,
+			nullptr,  // section
+			0.0f,     // speed (0 para que no se muevan con la cámara)
+			0.0       // angle
+		);
+	}
 }
 
 void Scene::CameraFollow()
@@ -234,6 +286,11 @@ bool Scene::CleanUp()
 	{
 		Engine::GetInstance().textures.get()->UnLoad(uiMenuTexture);
 		uiMenuTexture = nullptr;
+	}
+
+	if (heartTexture != nullptr) {
+		Engine::GetInstance().textures.get()->UnLoad(heartTexture);
+		heartTexture = nullptr;
 	}
 
 	return true;

@@ -40,6 +40,7 @@ private:
 	void CameraFollow();
 	void ToggleUIMenu();
 	void DrawUIMenu();
+	void DrawHearts();
 
 	int cameraCenterX = 400;
 	int cameraCenterY = 300;
@@ -51,4 +52,5 @@ private:
 
 	SDL_Texture* uiMenuTexture;
 	bool showUIMenu;
+	SDL_Texture* heartTexture = nullptr;
 };
