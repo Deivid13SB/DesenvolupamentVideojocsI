@@ -16,11 +16,11 @@
             "scaleInDock": 1
         },
         "MapTemplate.tmx": {
-            "scale": 0.096435546875,
+            "scale": 0.75,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 5599.594936708861,
-                "y": 362.9367088607596
+                "x": 1682.6666666666665,
+                "y": 257.33333333333337
             }
         },
         "MapTemplate.tmx#monochrome_tilemap": {
