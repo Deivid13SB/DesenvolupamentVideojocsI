@@ -30,25 +30,36 @@ bool Scene::Awake()
 	LOG("Loading Scene");
 	bool ret = true;
 
-	//L04: TODO 3b: Instantiate the player using the entity manager
+	// Make sure the renderer is initialized before loading textures
+	if (Engine::GetInstance().render.get()->renderer == nullptr) {
+		LOG("Renderer not initialized!");
+		return false;
+	}
+
+	// Load start screen texture
+	startTexture = Engine::GetInstance().textures.get()->Load("Assets/Textures/start.png");
+	if (startTexture == nullptr) {
+		LOG("Failed to load start screen texture!");
+		return false;
+	}
+
+	// Keep other entities inactive until start screen is dismissed
 	player = (Player*)Engine::GetInstance().entityManager->CreateEntity(EntityType::PLAYER);
-	
-	//L08 Create a new item using the entity manager and set the position to (200, 672) to test
-	Item* item = (Item*) Engine::GetInstance().entityManager->CreateEntity(EntityType::ITEM);
-	item->position = Vector2D(200, 672);
+	player->active = false;
+
 	return ret;
 }
 
 // Called before the first frame
 bool Scene::Start()
 {
-	//L06 TODO 3: Call the function to load the map. 
-	Engine::GetInstance().map->Load("Assets/Maps/", "MapTemplate.tmx");
-
-	uiMenuTexture = Engine::GetInstance().textures.get()->Load("Assets/Textures/UIDebug.png");
-	
-	Engine::GetInstance().audio->PlayMusic("Assets/Audio/Music/background.ogg");
-
+	if (!showStartScreen)
+	{
+		// Load game resources
+		Engine::GetInstance().map->Load("Assets/Maps/", "MapTemplate.tmx");
+		uiMenuTexture = Engine::GetInstance().textures.get()->Load("Assets/Textures/UIDebug.png");
+		Engine::GetInstance().audio->PlayMusic("Assets/Audio/Music/background.ogg");
+	}
 	return true;
 }
 
@@ -78,6 +89,32 @@ bool Scene::Update(float dt)
 	if(Engine::GetInstance().input.get()->GetKey(SDL_SCANCODE_RIGHT) == KEY_REPEAT)
 		Engine::GetInstance().render.get()->camera.x += ceil(camSpeed * dt);*/
 
+	if (showStartScreen)
+		{
+		// Only try to render if we have a valid texture
+		if (startTexture != nullptr)
+			{
+		 // Get window dimensions
+				int w, h;
+				Engine::GetInstance().window.get()->GetWindowSize(w, h);
+
+				SDL_Rect fullScreen = { 0, 0, w, h };
+
+				// Draw the start screen
+				if (!Engine::GetInstance().render.get()->DrawTexture(startTexture, 0, 0, &fullScreen))
+				{
+					LOG("Failed to render start screen!");
+				}
+
+				// Check for input to start game
+				if (Engine::GetInstance().input.get()->GetKey(SDL_SCANCODE_SPACE) == KEY_DOWN)
+				{
+					showStartScreen = false;
+					player->active = true;
+					Start(); // Initialize the rest of the game
+				}
+			}
+	}
 	if (Engine::GetInstance().input.get()->GetKey(SDL_SCANCODE_H) == KEY_DOWN)
 	{
 		ToggleUIMenu();
@@ -177,6 +214,18 @@ void Scene::DrawUIMenu()
 // Called before quitting
 bool Scene::CleanUp()
 {
+	LOG("Cleaning Up Scene");
+
+	if (startTexture != nullptr)
+	{
+		Engine::GetInstance().textures.get()->UnLoad(startTexture);
+		startTexture = nullptr;
+	}
+	if (startTexture != nullptr)
+	{
+		SDL_DestroyTexture(startTexture);
+		startTexture = nullptr;
+	}
 	LOG("Freeing scene");
 
 	SDL_DestroyTexture(img);

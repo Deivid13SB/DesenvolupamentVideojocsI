@@ -75,6 +75,30 @@ void Engine::AddModule(std::shared_ptr<Module> module){
 
 // Called before render is available
 bool Engine::Awake() {
+    bool ret = false;
+
+    ret = LoadConfig();
+
+    if (ret == true)
+    {
+        // Make sure window is initialized before render
+        if (window->Awake() == true)
+        {
+            // Initialize render after window
+            if (render->Awake() == true)
+            {
+                // Initialize other modules
+                input->Awake();
+                textures->Awake();
+                audio->Awake();
+                scene->Awake();
+                entityManager->Awake();
+                map->Awake();
+                physics->Awake();
+                ret = true;
+            }
+        }
+    }
 
     //Measure the amount of ms that takes to execute the Awake and LOG the result
     Timer timer = Timer();

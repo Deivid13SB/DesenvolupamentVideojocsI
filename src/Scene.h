@@ -34,7 +34,9 @@ public:
 	bool CleanUp();
 
 private:
-
+private:
+	SDL_Texture* startTexture = nullptr;
+	bool showStartScreen = true;
 	void CameraFollow();
 	void ToggleUIMenu();
 	void DrawUIMenu();
