@@ -19,11 +19,14 @@
             "scale": 0.75,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 10802.666666666666,
-                "y": 257.33333333333337
+                "x": 5555.333333333333,
+                "y": 367.33333333333326
             }
         },
         "MapTemplate.tmx#monochrome_tilemap": {
+            "scaleInDock": 1
+        },
+        "MapTemplate.tmx#tmw_desert_spacing": {
             "scaleInDock": 1
         },
         "Mapa2.tmx": {
