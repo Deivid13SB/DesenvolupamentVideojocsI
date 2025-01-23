@@ -4,6 +4,9 @@
   <image source="tmw_desert_spacing.png" width="678" height="678"/>
  </tileset>
  <tileset firstgid="401" source="MapMetadata.tsx"/>
+ <tileset firstgid="405" name="tmw_desert_spacing" tilewidth="32" tileheight="32" spacing="2" tilecount="400" columns="20">
+  <image source="tmw_desert_spacing.png" width="678" height="678"/>
+ </tileset>
  <layer id="1" name="Capa de patrones 1" width="350" height="23">
   <properties>
    <property name="Draw" type="bool" value="true"/>
