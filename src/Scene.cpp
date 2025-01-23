@@ -11,11 +11,6 @@
 #include "Player.h"
 #include "Map.h"
 #include "Item.h"
-#include "WalkingEnemy.h"
-#include "FlyingEnemy.h"
-#include "Pathfinding.h"
-#include "Physics.h"
-#include <vector>
 
 Scene::Scene() : Module()
 {
@@ -47,56 +42,12 @@ bool Scene::Awake()
 // Called before the first frame
 bool Scene::Start()
 {
-	bool mapLoaded = Engine::GetInstance().map->Load("Assets/Maps/my_map.tmx");
-	if (!mapLoaded)
-	{
-		LOG("Error: No se pudo cargar el mapa");
-		return false;
-	}
+	//L06 TODO 3: Call the function to load the map. 
+	Engine::GetInstance().map->Load("Assets/Maps/", "MapTemplate.tmx");
 
-	auto* walkingEnemy1 = (WalkingEnemy*)Engine::GetInstance().entityManager->CreateEntity(EntityType::WALKING_ENEMY);
-	walkingEnemy1->position = Vector2D(300, 400);
-
-	auto* walkingEnemy2 = (WalkingEnemy*)Engine::GetInstance().entityManager->CreateEntity(EntityType::WALKING_ENEMY);
-	walkingEnemy2->position = Vector2D(600, 600);
-
-	// Crear instancias de FlyingEnemy
-	auto* flyingEnemy1 = (FlyingEnemy*)Engine::GetInstance().entityManager->CreateEntity(EntityType::FLYING_ENEMY);
-	flyingEnemy1->position = Vector2D(500, 350);
-
-	auto* flyingEnemy2 = (FlyingEnemy*)Engine::GetInstance().entityManager->CreateEntity(EntityType::FLYING_ENEMY);
-	flyingEnemy2->position = Vector2D(700, 400);
-
-	// Obtener dimensiones del mapa
-	int mapWidth = Engine::GetInstance().map->GetMapWidth();
-	int mapHeight = Engine::GetInstance().map->GetMapHeight();
-	int tileSize = Engine::GetInstance().map->GetTileWidth();
-
-	if (mapWidth <= 0 || mapHeight <= 0 || tileSize <= 0)
-	{
-		LOG("Error: Dimensiones del mapa inválidas");
-		return false;
-	}
-
-	// Configurar el sistema de pathfinding
-	pathfinding = new Pathfinding(mapWidth, mapHeight, tileSize);
-
-	// Configurar tiles caminables
-	MapLayer* collisionsLayer = Engine::GetInstance().map->GetLayer("Collisions");
-	if (!collisionsLayer)
-	{
-		LOG("Error: No se encontró la capa de colisión");
-		return false;
-	}
-
-	for (int y = 0; y < mapHeight; ++y)
-	{
-		for (int x = 0; x < mapWidth; ++x)
-		{
-			bool walkable = (collisionsLayer->Get(x, y) == 0); // 0 indica un tile caminable
-			pathfinding->SetWalkable(x, y, walkable);
-		}
-	}
+	uiMenuTexture = Engine::GetInstance().textures.get()->Load("Assets/Textures/UIDebug.png");
+	
+	Engine::GetInstance().audio->PlayMusic("Assets/Audio/Music/background.ogg");
 
 	return true;
 }
@@ -110,12 +61,6 @@ bool Scene::PreUpdate()
 // Called each loop iteration
 bool Scene::Update(float dt)
 {
-
-	if (!enemiesInitialized)
-	{
-		InitializeEnemies();
-		enemiesInitialized = true;
-	}
 
 	CameraFollow();
 	////L03 TODO 3: Make the camera movement independent of framerate
@@ -153,18 +98,6 @@ bool Scene::Update(float dt)
 	}
 
 	return true;
-}
-
-void Scene::InitializeEnemies()
-{
-	auto* walkingEnemy1 = (WalkingEnemy*)Engine::GetInstance().entityManager->CreateEntity(EntityType::WALKING_ENEMY);
-	walkingEnemy1->position = Vector2D(300, 400);
-
-	
-	auto* walkingEnemy2 = (WalkingEnemy*)Engine::GetInstance().entityManager->CreateEntity(EntityType::WALKING_ENEMY);
-	walkingEnemy2->position = Vector2D(600, 400);
-
-	LOG("Walking enemies initialized.");
 }
 
 void Scene::CameraFollow()
