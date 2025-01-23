@@ -67,30 +67,39 @@ bool Physics::PreUpdate()
 
 PhysBody* Physics::CreateRectangle(int x, int y, int width, int height, bodyType type)
 {
-	b2BodyDef body;
+	if (world == nullptr)
+	{
+		LOG("Error: El mundo de física no está inicializado.");
+		return nullptr;
+	}
 
-	if (type == DYNAMIC) body.type = b2_dynamicBody;
-	if (type == STATIC) body.type = b2_staticBody;
-	if (type == KINEMATIC) body.type = b2_kinematicBody;
+	b2BodyDef bodyDef;
+	bodyDef.position.Set(PIXEL_TO_METERS(x), PIXEL_TO_METERS(y));
+	bodyDef.type = (type == DYNAMIC) ? b2_dynamicBody :
+		(type == STATIC) ? b2_staticBody :
+		b2_kinematicBody;
 
-	body.position.Set(PIXEL_TO_METERS(x), PIXEL_TO_METERS(y));
+	b2Body* b = world->CreateBody(&bodyDef);
+	if (b == nullptr)
+	{
+		LOG("Error: No se pudo crear el cuerpo físico.");
+		return nullptr;
+	}
 
-	b2Body* b = world->CreateBody(&body);
-	b2PolygonShape box;
-	box.SetAsBox(PIXEL_TO_METERS(width) * 0.5f, PIXEL_TO_METERS(height) * 0.5f);
+	b2PolygonShape boxShape;
+	boxShape.SetAsBox(PIXEL_TO_METERS(width) * 0.5f, PIXEL_TO_METERS(height) * 0.5f);
 
-	b2FixtureDef fixture;
-	fixture.shape = &box;
-	fixture.density = 1.0f;
-	b->ResetMassData();
+	b2FixtureDef fixtureDef;
+	fixtureDef.shape = &boxShape;
+	fixtureDef.density = 1.0f;
 
-	b->CreateFixture(&fixture);
+	b->CreateFixture(&fixtureDef);
 
 	PhysBody* pbody = new PhysBody();
 	pbody->body = b;
-	b->GetUserData().pointer = (uintptr_t) pbody;
-	pbody->width = width * 0.5f;
-	pbody->height = height * 0.5f;
+	b->GetUserData().pointer = (uintptr_t)pbody;
+	pbody->width = width;
+	pbody->height = height;
 
 	return pbody;
 }
@@ -389,6 +398,13 @@ void Physics::EndContact(b2Contact* contact)
 
 void PhysBody::GetPosition(int& x, int& y) const
 {
+	if (body == nullptr)
+	{
+		LOG("Error: body es nullptr en GetPosition");
+		x = 0;
+		y = 0;
+		return;
+	}
 	b2Vec2 pos = body->GetPosition();
 	x = METERS_TO_PIXELS(pos.x) - (width);
 	y = METERS_TO_PIXELS(pos.y) - (height);

@@ -2,12 +2,16 @@
 
 #include "Input.h"
 #include "Render.h"
+#include "Vector2D.h"
+#include <string>
 
 enum class EntityType
 {
 	PLAYER,
 	ITEM,
-	SPIKE
+	SPIKE,
+	WALKING_ENEMY,
+	FLYING_ENEMY
 };
 
 class PhysBody;

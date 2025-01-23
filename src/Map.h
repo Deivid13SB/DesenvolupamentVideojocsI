@@ -122,7 +122,7 @@ public:
     bool CleanUp();
 
     // Load new map
-    bool Load(std::string path, std::string mapFileName);
+    bool Load(const std::string& fullPath);
 
     // L07: TODO 8: Create a method that translates x,y coordinates from map positions to world positions
     Vector2D MapToWorld(int x, int y) const;
@@ -134,6 +134,16 @@ public:
     bool LoadProperties(pugi::xml_node& node, Properties& properties);
 
     bool LoadLayer(pugi::xml_node& layerNode);
+
+    MapLayer* GetLayer(const std::string& name) const
+    {
+        for (auto& layer : mapData.layers)
+        {
+            if (layer->name == name)
+                return layer;
+        }
+        return nullptr;
+    }
 
 public: 
     std::string mapFileName;

@@ -3,6 +3,7 @@
 #include "Module.h"
 #include "Player.h"
 #include "SDL2/SDL.h"
+#include "Pathfinding.h"
 
 struct SDL_Texture;
 
@@ -33,11 +34,15 @@ public:
 	// Called before quitting
 	bool CleanUp();
 
+	Player* GetPlayer() const { return player; }
+	Pathfinding* pathfinding;
+
 private:
 
 	void CameraFollow();
 	void ToggleUIMenu();
 	void DrawUIMenu();
+	void InitializeEnemies();
 
 	int cameraCenterX = 400;
 	int cameraCenterY = 300;
@@ -46,7 +51,9 @@ private:
 
 	//L03: TODO 3b: Declare a Player attribute
 	Player* player;
+	
 
 	SDL_Texture* uiMenuTexture;
 	bool showUIMenu;
+	bool enemiesInitialized = false;
 };
