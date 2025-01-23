@@ -1,0 +1,61 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "Mapa2.tmx",
+    "expandedProjectPaths": [
+        "."
+    ],
+    "file.lastUsedOpenFilter": "Todos los archivos (*)",
+    "fileStates": {
+        "": {
+            "scaleInDock": 5.5
+        },
+        "MapMetadata.tsx": {
+            "scaleInDock": 1
+        },
+        "MapTemplate.tmx": {
+            "scale": 0.096435546875,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 5599.594936708861,
+                "y": 362.9367088607596
+            }
+        },
+        "MapTemplate.tmx#monochrome_tilemap": {
+            "scaleInDock": 1
+        },
+        "Mapa2.tmx": {
+            "scale": 0.7817708333333333,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 495.02998001332446,
+                "y": 560.2664890073285
+            }
+        },
+        "Mapa2.tmx#MapMetadata": {
+            "scaleInDock": 1
+        },
+        "Mapa2.tmx#tmw_desert_spacing": {
+            "scaleInDock": 1.5,
+            "scaleInEditor": 1
+        }
+    },
+    "last.imagePath": "C:/Users/User/Desktop/DesenvolupamentVideojocsI/Assets/Maps",
+    "map.height": 30,
+    "map.lastUsedFormat": "tmx",
+    "openFiles": [
+        "Mapa2.tmx",
+        "MapTemplate.tmx"
+    ],
+    "project": "sin nombre.tiled-project",
+    "property.type": "bool",
+    "recentFiles": [
+        "MapTemplate.tmx",
+        "Mapa2.tmx"
+    ],
+    "tileset.embedInMap": true,
+    "tileset.margin": 0,
+    "tileset.spacing": 1
+}
