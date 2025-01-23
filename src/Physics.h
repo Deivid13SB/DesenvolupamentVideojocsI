@@ -26,7 +26,8 @@ enum class ColliderType {
 	PLAYER, 
 	ITEM,
 	PLATFORM, 
-	SPIKE
+	SPIKE,
+	CHECKPOINT
 	// ..
 };
 

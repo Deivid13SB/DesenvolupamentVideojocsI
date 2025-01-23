@@ -61,6 +61,7 @@ bool Scene::PreUpdate()
 // Called each loop iteration
 bool Scene::Update(float dt)
 {
+
 	CameraFollow();
 	////L03 TODO 3: Make the camera movement independent of framerate
 	/*float camSpeed = 1;
@@ -85,6 +86,15 @@ bool Scene::Update(float dt)
 	if (showUIMenu)
 	{
 		DrawUIMenu();
+	}
+
+	if (Engine::GetInstance().input->GetKey(SDL_SCANCODE_F5) == KEY_DOWN) {
+		player->SaveState();
+	}
+
+	if (Engine::GetInstance().input->GetKey(SDL_SCANCODE_F6) == KEY_DOWN) {
+		player->LoadState();
+		
 	}
 
 	return true;

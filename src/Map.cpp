@@ -270,6 +270,8 @@ bool Map::Load(std::string path, std::string fileName)
 
         ret = true;
     }
+
+
     catch (const std::exception& e)
     {
         LOG("Error loading map: %s", e.what());
@@ -313,5 +315,47 @@ bool Map::LoadProperties(pugi::xml_node& node, Properties& properties)
     return ret;
 }
 
+bool Map::LoadLayer(pugi::xml_node& layerNode) {
+    bool ret = true;
 
+    // Carga la capa normal del mapa
+    if (layerNode.child("data") != NULL) {
+        MapLayer* mapLayer = new MapLayer();
+        mapLayer->id = layerNode.attribute("id").as_int();
+        mapLayer->name = layerNode.attribute("name").as_string();
+        mapLayer->width = layerNode.attribute("width").as_int();
+        mapLayer->height = layerNode.attribute("height").as_int();
+
+        LoadProperties(layerNode, mapLayer->properties);
+
+        pugi::xml_node dataNode = layerNode.child("data");
+        if (dataNode == NULL) {
+            LOG("Error loading map layer data");
+            ret = false;
+        }
+        else {
+            for (pugi::xml_node tileNode = dataNode.child("tile");
+                tileNode; tileNode = tileNode.next_sibling("tile")) {
+                mapLayer->tiles.push_back(tileNode.attribute("gid").as_int());
+            }
+        }
+
+        mapData.layers.push_back(mapLayer);
+    }
+    // Carga los checkpoints
+    else if (layerNode.attribute("name").as_string() == std::string("Checkpoints")) {
+        for (pugi::xml_node objectNode = layerNode.child("object");
+            objectNode; objectNode = objectNode.next_sibling("object")) {
+
+            int x = objectNode.attribute("x").as_int();
+            int y = objectNode.attribute("y").as_int();
+
+            PhysBody* checkpointBody = Engine::GetInstance().physics->CreateRectangleSensor(
+                x, y, 32, 32, bodyType::STATIC);
+            checkpointBody->ctype = ColliderType::CHECKPOINT;
+        }
+    }
+
+    return ret;
+}
 

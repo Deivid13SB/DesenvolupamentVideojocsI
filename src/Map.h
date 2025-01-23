@@ -94,10 +94,10 @@ struct MapData
 	int height;
 	int tileWidth;
 	int tileHeight;
-    std::list<TileSet*> tilesets;
+    std::vector<TileSet*> tilesets;
 
     // L07: TODO 2: Add the info to the MapLayer Struct
-    std::list<MapLayer*> layers;
+    std::vector<MapLayer*> layers;
 };
 
 class Map : public Module
@@ -133,6 +133,8 @@ public:
     // L09: TODO 6: Load a group of properties 
     bool LoadProperties(pugi::xml_node& node, Properties& properties);
 
+    bool LoadLayer(pugi::xml_node& layerNode);
+
 public: 
     std::string mapFileName;
     std::string mapPath;
@@ -140,6 +142,7 @@ public:
     int GetMapHeight() const { return mapData.height; }
     int GetTileWidth() const { return mapData.tileWidth; }
     int GetTileHeight() const { return mapData.tileHeight; }
+
 
 private:
     bool mapLoaded;

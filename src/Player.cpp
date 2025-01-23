@@ -18,10 +18,6 @@ Player::Player() :
 	position = Vector2D(96, 500);
 }
 
-void Player::Respawn() {
-	Vector2D(96, 500) = spawnPoint;
-}
-
 Player::~Player() {
 
 }
@@ -41,6 +37,7 @@ bool Player::Start() {
 	// L08 TODO 5: Add physics to the player - initialize physics body
 	Engine::GetInstance().textures.get()->GetSize(texture, texW, texH);
 	pbody = Engine::GetInstance().physics.get()->CreateCircle((int)position.getX(), (int)position.getY(), texW / 2, bodyType::DYNAMIC);
+
 
 	// L08 TODO 6: Assign player class (using "this") to the listener of the pbody. This makes the Physics module to call the OnCollision method
 	pbody->listener = this;
@@ -132,6 +129,10 @@ bool Player::Update(float dt)
 		}
 		pbody->body->SetLinearVelocity(velocity);
 	}
+	if (pendingRespawn) {
+		Respawn();
+		pendingRespawn = false;
+	}
 
 	return true;
 }
@@ -155,12 +156,16 @@ void Player::OnCollision(PhysBody* physA, PhysBody* physB) {
 	case ColliderType::ITEM:
 		LOG("Collision ITEM");
 		break;
+
+	if (physB->ctype == ColliderType::CHECKPOINT) {
+        SetCheckpoint(Vector2D(position.getX(), position.getY()));
+    }
 	case ColliderType::SPIKE:
 		LOG("Collision SPIKE");
 		if (!godMode)
 		{
 			isDead = true;
-			Respawn();// Call respawn immediately when player dies
+			pendingRespawn = true;// Call respawn immediately when player dies
 		}
 
 	default:
@@ -187,4 +192,55 @@ void Player::OnCollisionEnd(PhysBody* physA, PhysBody* physB)
 	default:
 		break;
 	}
+}
+
+bool Player::SaveState() {
+	pugi::xml_document saveDoc;
+	pugi::xml_node rootNode = saveDoc.append_child("game_state");
+
+	rootNode.append_child("player_x").append_child(pugi::node_pcdata).set_value(std::to_string(position.getX()).c_str());
+	rootNode.append_child("player_y").append_child(pugi::node_pcdata).set_value(std::to_string(position.getY()).c_str());
+
+	return saveDoc.save_file("save_game.xml");
+}
+
+bool Player::LoadState() {
+	pugi::xml_document loadDoc;
+	if (loadDoc.load_file("save_game.xml")) {
+		pugi::xml_node rootNode = loadDoc.child("game_state");
+		float x = std::stof(rootNode.child("player_x").child_value());
+		float y = std::stof(rootNode.child("player_y").child_value());
+
+		position = Vector2D(x, y);
+		if (pbody != nullptr) {
+			pbody->body->SetTransform(b2Vec2(PIXEL_TO_METERS(x), PIXEL_TO_METERS(y)), 0.0f);
+		}
+		return true;
+	}
+	return false;
+}
+
+void Player::SetCheckpoint(Vector2D pos) {
+	lastCheckpoint = pos;
+	hasCheckpoint = true;
+	// Opcional: Añadir efecto de sonido
+	/*Engine::GetInstance().audio->PlayFx(checkpointFxId);*/
+}
+
+// Modifica la función Respawn existente
+void Player::Respawn() {
+
+	if (hasCheckpoint) {
+		position = lastCheckpoint;
+	}
+	else {
+		position = spawnPoint;
+	}
+
+	if (pbody != nullptr) {
+		pbody->body->SetTransform(
+			b2Vec2(PIXEL_TO_METERS(position.getX()),
+				PIXEL_TO_METERS(position.getY())), 0.0f);
+	}
+	isDead = false;
 }

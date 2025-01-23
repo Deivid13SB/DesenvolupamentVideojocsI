@@ -23,12 +23,16 @@ public:
 
 	bool CleanUp();
 
-	const Vector2D spawnPoint; // Hacer el spawnPoint constante
+	const Vector2D spawnPoint{ 96, 500 }; // Hacer el spawnPoint constante
 
 	// L08 TODO 6: Define OnCollision function for the player. 
 	void OnCollision(PhysBody* physA, PhysBody* physB);
 
 	void OnCollisionEnd(PhysBody* physA, PhysBody* physB);
+
+	bool SaveState();
+	bool LoadState();
+	void SetCheckpoint(Vector2D position);
 
 public:
 
@@ -51,4 +55,7 @@ public:
 	PhysBody* pbody;
 	float jumpForce = 1.9f; // The force to apply when jumping
 	bool isJumping = false; // Flag to check if the player is currently jumping
+	Vector2D lastCheckpoint;
+	bool hasCheckpoint = false;
+	bool pendingRespawn = false;
 };
