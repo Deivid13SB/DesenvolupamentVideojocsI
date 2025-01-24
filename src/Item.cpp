@@ -7,7 +7,6 @@
 #include "Scene.h"
 #include "Log.h"
 #include "Physics.h"
-#include "EntityManager.h"
 
 Item::Item() : Entity(EntityType::ITEM)
 {
@@ -24,7 +23,7 @@ bool Item::Awake() {
 bool Item::Start() {
 
 	//initilize textures
-	texture = Engine::GetInstance().textures.get()->Load("Assets/Textures/crystal.png");
+	texture = Engine::GetInstance().textures.get()->Load("Assets/Textures/goldCoin.png");
 	
 	// L08 TODO 4: Add a physics to an item - initialize the physics body
 	Engine::GetInstance().textures.get()->GetSize(texture, texW, texH);
@@ -41,16 +40,6 @@ void Item::Collect() {
 	// Desactivar el cuerpo físico cuando se recoge
 	if (pbody != nullptr) {
 		pbody->body->SetEnabled(false);
-	}
-
-	// Aplicar efecto al jugador
-	Player* player = dynamic_cast<Player*>(Engine::GetInstance().entityManager->GetEntity(EntityType::PLAYER));
-	if (player != nullptr) {
-		LOG("Applying buff to the player!");
-		player->ApplyBuff(20.0f, 1.5f, 1.5f); // Buff de 20 segundos, +50% velocidad y salto
-	}
-	else {
-		LOG("Failed to find player to apply buff!");
 	}
 }
 
@@ -69,13 +58,5 @@ bool Item::Update(float dt)
 
 bool Item::CleanUp()
 {
-	if (pbody != nullptr) {
-		Engine::GetInstance().physics->DestroyBody(pbody);
-		pbody = nullptr;
-	}
-	if (texture != nullptr) {
-		Engine::GetInstance().textures->UnLoad(texture);
-		texture = nullptr;
-	}
 	return true;
 }

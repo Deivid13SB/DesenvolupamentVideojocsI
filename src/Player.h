@@ -36,7 +36,6 @@ public:
 	int lives = 3;  // Número inicial de vidas
 	SDL_Texture* heartTexture = nullptr;
 	bool gameOver = false;
-	bool livesChanged = false;
 
 public:
 

@@ -74,15 +74,13 @@ SDL_Texture* const Textures::Load(const char* path)
 // Unload texture
 bool Textures::UnLoad(SDL_Texture* texture)
 {
-	if (texture == nullptr) return false; // Verifica si el puntero es nulo
-	for (auto it = textures.begin(); it != textures.end(); ++it) {
-		if (*it == texture) {
+	for (const auto& _texture : textures) {
+		if (_texture == texture) {
 			SDL_DestroyTexture(texture);
-			textures.erase(it);
 			return true;
 		}
 	}
-	LOG("Attempted to unload a texture not in the list.");
+
 	return false;
 }
 
