@@ -16,7 +16,6 @@ Player::Player() :
 	godMode = false;
 	isDead = false;
 	position = Vector2D(96, 500);
-	lives = 3; // Inicializamos con 3 vidas
 }
 
 Player::~Player() {
@@ -31,8 +30,6 @@ bool Player::Awake() {
 }
 
 bool Player::Start() {
-
-	heartTexture = Engine::GetInstance().textures.get()->Load("Assets/Textures/heart.png");
 
 	//L03: TODO 2: Initialize Player parameters
 	texture = Engine::GetInstance().textures.get()->Load("Assets/Textures/player.png");
@@ -168,7 +165,6 @@ void Player::OnCollision(PhysBody* physA, PhysBody* physB) {
 		if (!godMode)
 		{
 			isDead = true;
-			LoseLife();
 			pendingRespawn = true;// Call respawn immediately when player dies
 		}
 
@@ -234,28 +230,17 @@ void Player::SetCheckpoint(Vector2D pos) {
 // Modifica la función Respawn existente
 void Player::Respawn() {
 
-	if (!gameOver) {
-		if (hasCheckpoint) {
-			position = lastCheckpoint;
-		}
-		else {
-			position = spawnPoint;
-		}
-
-		if (pbody != nullptr) {
-			pbody->body->SetTransform(
-				b2Vec2(PIXEL_TO_METERS(position.getX()),
-					PIXEL_TO_METERS(position.getY())), 0.0f);
-		}
-		isDead = false;
+	if (hasCheckpoint) {
+		position = lastCheckpoint;
 	}
-}
-
-void Player::LoseLife() {
-	if (!godMode) {
-		lives--;
-		if (lives <= 0) {
-			gameOver = true;
-		}
+	else {
+		position = spawnPoint;
 	}
+
+	if (pbody != nullptr) {
+		pbody->body->SetTransform(
+			b2Vec2(PIXEL_TO_METERS(position.getX()),
+				PIXEL_TO_METERS(position.getY())), 0.0f);
+	}
+	isDead = false;
 }
