@@ -23,6 +23,8 @@ public:
 public:
 
 	bool isPicked = false;
+	void Collect(); // Nueva función
+	bool isCollected = false; // Nueva variable para rastrear si el ítem fue recogido
 
 private:
 

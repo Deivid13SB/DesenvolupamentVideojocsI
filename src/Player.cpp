@@ -7,6 +7,7 @@
 #include "Scene.h"
 #include "Log.h"
 #include "Physics.h"
+#include "Item.h"
 
 Player::Player() :
 	Entity(EntityType::PLAYER),
@@ -156,13 +157,9 @@ void Player::OnCollision(PhysBody* physA, PhysBody* physB) {
 		//reset the jump flag when touching the ground
 		isJumping = false;
 		break;
-	case ColliderType::ITEM:
-		LOG("Collision ITEM");
+	case ColliderType::CHECKPOINT:
+		SetCheckpoint(Vector2D(position.getX(), position.getY()));
 		break;
-
-	if (physB->ctype == ColliderType::CHECKPOINT) {
-        SetCheckpoint(Vector2D(position.getX(), position.getY()));
-    }
 	case ColliderType::SPIKE:
 		LOG("Collision SPIKE");
 		if (!godMode)
@@ -171,7 +168,16 @@ void Player::OnCollision(PhysBody* physA, PhysBody* physB) {
 			LoseLife();
 			pendingRespawn = true;// Call respawn immediately when player dies
 		}
-
+	case ColliderType::ITEM:
+		LOG("Collision ITEM");
+		// Obtener el ítem asociado al cuerpo físico
+		if (Item* item = static_cast<Item*>(physB->listener)) {
+			if (!item->isCollected) {
+				item->Collect();
+				// Reproducir el sonido de recolección
+				Engine::GetInstance().audio.get()->PlayFx(pickCoinFxId);
+			}
+		}
 	default:
 		break;
 	}
@@ -185,10 +191,6 @@ void Player::OnCollisionEnd(PhysBody* physA, PhysBody* physB)
 	{
 	case ColliderType::PLATFORM:
 		LOG("End Collision PLATFORM");
-		break;
-	case ColliderType::ITEM:
-		LOG("End Collision ITEM");
-		Engine::GetInstance().audio.get()->PlayFx(pickCoinFxId);
 		break;
 	case ColliderType::SPIKE:
 		LOG("Is dead");
