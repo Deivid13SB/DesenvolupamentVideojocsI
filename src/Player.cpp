@@ -7,6 +7,7 @@
 #include "Scene.h"
 #include "Log.h"
 #include "Physics.h"
+#include "Item.h"
 
 Player::Player() :
 	Entity(EntityType::PLAYER),
@@ -16,6 +17,7 @@ Player::Player() :
 	godMode = false;
 	isDead = false;
 	position = Vector2D(96, 500);
+	lives = 3; // Inicializamos con 3 vidas
 }
 
 Player::~Player() {
@@ -30,6 +32,8 @@ bool Player::Awake() {
 }
 
 bool Player::Start() {
+
+	heartTexture = Engine::GetInstance().textures.get()->Load("Assets/Textures/heart.png");
 
 	//L03: TODO 2: Initialize Player parameters
 	texture = Engine::GetInstance().textures.get()->Load("Assets/Textures/player.png");
@@ -153,21 +157,27 @@ void Player::OnCollision(PhysBody* physA, PhysBody* physB) {
 		//reset the jump flag when touching the ground
 		isJumping = false;
 		break;
-	case ColliderType::ITEM:
-		LOG("Collision ITEM");
+	case ColliderType::CHECKPOINT:
+		SetCheckpoint(Vector2D(position.getX(), position.getY()));
 		break;
-
-	if (physB->ctype == ColliderType::CHECKPOINT) {
-        SetCheckpoint(Vector2D(position.getX(), position.getY()));
-    }
 	case ColliderType::SPIKE:
 		LOG("Collision SPIKE");
 		if (!godMode)
 		{
 			isDead = true;
+			LoseLife();
 			pendingRespawn = true;// Call respawn immediately when player dies
 		}
-
+	case ColliderType::ITEM:
+		LOG("Collision ITEM");
+		// Obtener el ítem asociado al cuerpo físico
+		if (Item* item = static_cast<Item*>(physB->listener)) {
+			if (!item->isCollected) {
+				item->Collect();
+				// Reproducir el sonido de recolección
+				Engine::GetInstance().audio.get()->PlayFx(pickCoinFxId);
+			}
+		}
 	default:
 		break;
 	}
@@ -181,10 +191,6 @@ void Player::OnCollisionEnd(PhysBody* physA, PhysBody* physB)
 	{
 	case ColliderType::PLATFORM:
 		LOG("End Collision PLATFORM");
-		break;
-	case ColliderType::ITEM:
-		LOG("End Collision ITEM");
-		Engine::GetInstance().audio.get()->PlayFx(pickCoinFxId);
 		break;
 	case ColliderType::SPIKE:
 		LOG("Is dead");
@@ -230,17 +236,28 @@ void Player::SetCheckpoint(Vector2D pos) {
 // Modifica la función Respawn existente
 void Player::Respawn() {
 
-	if (hasCheckpoint) {
-		position = lastCheckpoint;
-	}
-	else {
-		position = spawnPoint;
-	}
+	if (!gameOver) {
+		if (hasCheckpoint) {
+			position = lastCheckpoint;
+		}
+		else {
+			position = spawnPoint;
+		}
 
-	if (pbody != nullptr) {
-		pbody->body->SetTransform(
-			b2Vec2(PIXEL_TO_METERS(position.getX()),
-				PIXEL_TO_METERS(position.getY())), 0.0f);
+		if (pbody != nullptr) {
+			pbody->body->SetTransform(
+				b2Vec2(PIXEL_TO_METERS(position.getX()),
+					PIXEL_TO_METERS(position.getY())), 0.0f);
+		}
+		isDead = false;
 	}
-	isDead = false;
+}
+
+void Player::LoseLife() {
+	if (!godMode) {
+		lives--;
+		if (lives <= 0) {
+			gameOver = true;
+		}
+	}
 }

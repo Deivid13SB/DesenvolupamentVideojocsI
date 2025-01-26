@@ -35,16 +35,24 @@ bool Item::Start() {
 	return true;
 }
 
+void Item::Collect() {
+	isCollected = true;
+	// Desactivar el cuerpo físico cuando se recoge
+	if (pbody != nullptr) {
+		pbody->body->SetEnabled(false);
+	}
+}
+
 bool Item::Update(float dt)
 {
-	// L08 TODO 4: Add a physics to an item - update the position of the object from the physics.  
+	if (!isCollected) {
+		// Solo dibuja el ítem si no ha sido recogido
+		b2Transform pbodyPos = pbody->body->GetTransform();
+		position.setX(METERS_TO_PIXELS(pbodyPos.p.x) - texH / 2);
+		position.setY(METERS_TO_PIXELS(pbodyPos.p.y) - texH / 2);
 
-	b2Transform pbodyPos = pbody->body->GetTransform();
-	position.setX(METERS_TO_PIXELS(pbodyPos.p.x) - texH / 2);
-	position.setY(METERS_TO_PIXELS(pbodyPos.p.y) - texH / 2);
-
-	Engine::GetInstance().render.get()->DrawTexture(texture, (int)position.getX(), (int)position.getY());
-
+		Engine::GetInstance().render.get()->DrawTexture(texture, (int)position.getX(), (int)position.getY());
+	}
 	return true;
 }
 

@@ -26,29 +26,25 @@ bool Render::Awake()
 
 	Uint32 flags = SDL_RENDERER_ACCELERATED;
 
+	//L05 TODO 5 - Load the configuration of the Render module
 	if (configParameters.child("vsync").attribute("value").as_bool() == true) {
 		flags |= SDL_RENDERER_PRESENTVSYNC;
 		LOG("Using vsync");
 	}
+	int scale = Engine::GetInstance().window.get()->GetScale();
 
-	// Make sure we have a valid window before creating the renderer
 	SDL_Window* window = Engine::GetInstance().window.get()->window;
-	if (window == nullptr) {
-		LOG("Window not initialized before renderer!");
-		return false;
-	}
-
 	renderer = SDL_CreateRenderer(window, -1, flags);
 
-	if (renderer == nullptr)
+	if(renderer == NULL)
 	{
 		LOG("Could not create the renderer! SDL_Error: %s\n", SDL_GetError());
 		ret = false;
 	}
 	else
 	{
-		camera.w = Engine::GetInstance().window.get()->width;
-		camera.h = Engine::GetInstance().window.get()->height;
+		camera.w = Engine::GetInstance().window.get()->width * scale;
+		camera.h = Engine::GetInstance().window.get()->height * scale;
 		camera.x = 0;
 		camera.y = 0;
 	}

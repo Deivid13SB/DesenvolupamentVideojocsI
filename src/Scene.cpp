@@ -15,9 +15,14 @@
 Scene::Scene() : Module()
 {
 	name = "scene";
-	img = nullptr;
 	uiMenuTexture = nullptr;
 	showUIMenu = false;
+	heartTexture = nullptr;
+	introTexture = nullptr;
+	titleTexture = nullptr;
+	pauseTexture = nullptr;
+	dieTexture = nullptr;
+	endTexture = nullptr;
 }
 
 // Destructor
@@ -30,42 +35,37 @@ bool Scene::Awake()
 	LOG("Loading Scene");
 	bool ret = true;
 
-	// Make sure the renderer is initialized before loading textures
-	if (Engine::GetInstance().render.get()->renderer == nullptr) {
-		LOG("Renderer not initialized!");
-		return false;
-	}
-
-	// Load start screen texture
-	startTexture = Engine::GetInstance().textures.get()->Load("Assets/Textures/start.png");
-	if (startTexture == nullptr) {
-		LOG("Failed to load start screen texture!");
-		return false;
-	}
-
-	// Keep other entities inactive until start screen is dismissed
-	player = (Player*)Engine::GetInstance().entityManager->CreateEntity(EntityType::PLAYER);
-	player->active = false;
-
+	//L04: TODO 3b: Instantiate the player using the entity manager
+	
+	//L08 Create a new item using the entity manager and set the position to (200, 672) to test
+	//Item* item = (Item*) Engine::GetInstance().entityManager->CreateEntity(EntityType::ITEM);
+	//item->position = Vector2D(200, 672);
 	return ret;
 }
 
 // Called before the first frame
 bool Scene::Start()
 {
-	if (!showStartScreen)
-	{
-		// Load game resources
-		Engine::GetInstance().map->Load("Assets/Maps/", "MapTemplate.tmx");
-		uiMenuTexture = Engine::GetInstance().textures.get()->Load("Assets/Textures/UIDebug.png");
-		Engine::GetInstance().audio->PlayMusic("Assets/Audio/Music/background.ogg");
-	}
+	introTexture = Engine::GetInstance().textures->Load("Assets/Textures/IntroScreen.png");
+	titleTexture = Engine::GetInstance().textures->Load("Assets/Textures/TitleScreen.png");
+	pauseTexture = Engine::GetInstance().textures->Load("Assets/Textures/PauseScreen.png");
+	dieTexture = Engine::GetInstance().textures->Load("Assets/Textures/DieScreen.png");
+	endTexture = Engine::GetInstance().textures->Load("Assets/Textures/EndScreen.png");
+
 	//L06 TODO 3: Call the function to load the map. 
 	Engine::GetInstance().map->Load("Assets/Maps/", "MapTemplate.tmx");
 
 	uiMenuTexture = Engine::GetInstance().textures.get()->Load("Assets/Textures/UIDebug.png");
 	
 	Engine::GetInstance().audio->PlayMusic("Assets/Audio/Music/background.ogg");
+
+	heartTexture = Engine::GetInstance().textures.get()->Load("Assets/Textures/heart.png");
+	if (heartTexture == nullptr) {
+		LOG("Failed to load heart texture!");
+	}
+
+	player = (Player*)Engine::GetInstance().entityManager->CreateEntity(EntityType::PLAYER);
+
 
 	return true;
 }
@@ -79,6 +79,58 @@ bool Scene::PreUpdate()
 // Called each loop iteration
 bool Scene::Update(float dt)
 {
+	switch (currentState)
+	{
+	case SceneState::INTRO:
+		DrawIntroScreen();
+		if (Engine::GetInstance().input->GetKey(SDL_SCANCODE_RETURN) == KEY_DOWN)
+		{
+			ChangeState(SceneState::TITLE);
+		}
+		break;
+
+	case SceneState::TITLE:
+		DrawTitleScreen();
+		if (Engine::GetInstance().input->GetKey(SDL_SCANCODE_RETURN) == KEY_DOWN)
+		{
+			ChangeState(SceneState::GAME);
+		}
+		break;
+
+	case SceneState::GAME:
+		if (Engine::GetInstance().input->GetKey(SDL_SCANCODE_ESCAPE) == KEY_DOWN) {
+			ChangeState(SceneState::PAUSE);
+		}
+		if (player->IsGameOver())
+		{
+			ChangeState(SceneState::DIE);
+		}
+		break;
+
+	case SceneState::PAUSE:
+		DrawPauseScreen();
+		if (Engine::GetInstance().input->GetKey(SDL_SCANCODE_ESCAPE) == KEY_DOWN)
+		{
+			ChangeState(SceneState::GAME);
+		}
+		break;
+
+	case SceneState::DIE:
+		DrawDieScreen();
+		if (Engine::GetInstance().input->GetKey(SDL_SCANCODE_RETURN) == KEY_DOWN)
+		{
+			ChangeState(SceneState::TITLE);
+		}
+		break;
+
+	case SceneState::END:
+		DrawEndScreen();
+		if (Engine::GetInstance().input->GetKey(SDL_SCANCODE_RETURN) == KEY_DOWN)
+		{
+			ChangeState(SceneState::TITLE);
+		}
+		break;
+	}
 
 	CameraFollow();
 	////L03 TODO 3: Make the camera movement independent of framerate
@@ -96,35 +148,16 @@ bool Scene::Update(float dt)
 	if(Engine::GetInstance().input.get()->GetKey(SDL_SCANCODE_RIGHT) == KEY_REPEAT)
 		Engine::GetInstance().render.get()->camera.x += ceil(camSpeed * dt);*/
 
-	if (showStartScreen)
-		{
-		// Only try to render if we have a valid texture
-		if (startTexture != nullptr)
-			{
-		 // Get window dimensions
-				int w, h;
-				Engine::GetInstance().window.get()->GetWindowSize(w, h);
-
-				SDL_Rect fullScreen = { 0, 0, w, h };
-
-				// Draw the start screen
-				if (!Engine::GetInstance().render.get()->DrawTexture(startTexture, 0, 0, &fullScreen))
-				{
-					LOG("Failed to render start screen!");
-				}
-
-				// Check for input to start game
-				if (Engine::GetInstance().input.get()->GetKey(SDL_SCANCODE_SPACE) == KEY_DOWN)
-				{
-					showStartScreen = false;
-					player->active = true;
-					Start(); // Initialize the rest of the game
-				}
-			}
-	}
 	if (Engine::GetInstance().input.get()->GetKey(SDL_SCANCODE_H) == KEY_DOWN)
 	{
 		ToggleUIMenu();
+	}
+
+	if (player->IsGameOver()) {
+		// Aquí puedes añadir lo que quieras que suceda cuando se acabe el juego
+		// Por ejemplo:
+		LOG("GAME OVER - No more lives!");
+		return false;
 	}
 
 	if (showUIMenu)
@@ -141,7 +174,40 @@ bool Scene::Update(float dt)
 		
 	}
 
+	DrawHearts();
+
 	return true;
+}
+
+void Scene::DrawHearts() {
+
+	LOG("Drawing hearts. Player lives: %d", player->lives);
+	LOG("Heart texture pointer: %p", heartTexture);
+	if (heartTexture == nullptr || player == nullptr) return;
+
+	// Obtener dimensiones de la ventana
+	int windowWidth, windowHeight;
+	Engine::GetInstance().window.get()->GetWindowSize(windowWidth, windowHeight);
+
+	// Tamaño de cada corazón
+	const int heartSize = 32; // Ajusta este valor según el tamaño de tu textura
+	const int padding = 10;   // Espacio entre corazones
+
+	// Posición base para los corazones (esquina superior derecha)
+	int baseX = windowWidth - ((heartSize + padding) * 3);
+	int baseY = 100;
+
+	// Dibujar los corazones basados en las vidas del jugador
+	for (int i = 0; i < player->lives; i++) {
+		Engine::GetInstance().render.get()->DrawTexture(
+			heartTexture,
+			baseX + (i * (heartSize + padding)),
+			baseY,
+			nullptr,  // section
+			0.0f,     // speed (0 para que no se muevan con la cámara)
+			0.0       // angle
+		);
+	}
 }
 
 void Scene::CameraFollow()
@@ -218,29 +284,84 @@ void Scene::DrawUIMenu()
 	}
 }
 
+void Scene::ChangeState(SceneState newState)
+{
+	currentState = newState;
+}
+
+void Scene::DrawIntroScreen()
+{
+	Engine::GetInstance().render->DrawTexture(introTexture, 0, 0);
+}
+
+void Scene::DrawTitleScreen()
+{
+	Engine::GetInstance().render->DrawTexture(titleTexture, 0, 0);
+}
+
+void Scene::DrawPauseScreen()
+{
+	Engine::GetInstance().render->DrawTexture(pauseTexture, 0, 0);
+}
+
+void Scene::DrawDieScreen()
+{
+	Engine::GetInstance().render->DrawTexture(dieTexture, 0, 0);
+}
+
+void Scene::DrawEndScreen()
+{
+	Engine::GetInstance().render->DrawTexture(endTexture, 0, 0);
+}
+
+
 // Called before quitting
 bool Scene::CleanUp()
 {
-	LOG("Cleaning Up Scene");
-
-	if (startTexture != nullptr)
-	{
-		Engine::GetInstance().textures.get()->UnLoad(startTexture);
-		startTexture = nullptr;
-	}
-	if (startTexture != nullptr)
-	{
-		SDL_DestroyTexture(startTexture);
-		startTexture = nullptr;
-	}
 	LOG("Freeing scene");
 
 	SDL_DestroyTexture(img);
 
-	if (uiMenuTexture != nullptr)
-	{
-		Engine::GetInstance().textures.get()->UnLoad(uiMenuTexture);
+	if (uiMenuTexture != nullptr) {
+		LOG("Unloading uiMenuTexture...");
+		Engine::GetInstance().textures->UnLoad(uiMenuTexture);
 		uiMenuTexture = nullptr;
+	}
+
+	if (heartTexture != nullptr) {
+		LOG("Unloading heartTexture...");
+		Engine::GetInstance().textures->UnLoad(heartTexture);
+		heartTexture = nullptr;
+	}
+
+	if (introTexture != nullptr) {
+		LOG("Unloading introTexture...");
+		Engine::GetInstance().textures->UnLoad(introTexture);
+		introTexture = nullptr;
+	}
+
+	if (titleTexture != nullptr) {
+		LOG("Unloading titleTexture...");
+		Engine::GetInstance().textures->UnLoad(titleTexture);
+		titleTexture = nullptr;
+	}
+
+	if (pauseTexture != nullptr) {
+		LOG("Unloading pauseTexture...");
+		Engine::GetInstance().textures->UnLoad(pauseTexture);
+		pauseTexture = nullptr;
+	}
+
+	if (dieTexture != nullptr) {
+		LOG("Unloading dieTexture...");
+		Engine::GetInstance().textures->UnLoad(dieTexture);
+		dieTexture = nullptr;
+	}
+
+	if (endTexture != nullptr) {
+		LOG("Unloading endTexture...");
+		Engine::GetInstance().textures->UnLoad(endTexture);
+		endTexture = nullptr;
 	}
 
 	return true;

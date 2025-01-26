@@ -2,6 +2,7 @@
 #include "Input.h"
 #include "Window.h"
 #include "Log.h"
+#include "Scene.h"
 
 #define MAX_KEYS 300
 
@@ -82,8 +83,13 @@ bool Input::PreUpdate()
 		switch(event.type)
 		{
 			case SDL_QUIT:
-				windowEvents[WE_QUIT] = true;
-			break;
+				if (Engine::GetInstance().scene->currentState != SceneState::GAME &&
+					Engine::GetInstance().scene->currentState != SceneState::PAUSE)
+				{
+					windowEvents[WE_QUIT] = true;
+				}
+				break;
+
 
 			case SDL_WINDOWEVENT:
 				switch(event.window.event)

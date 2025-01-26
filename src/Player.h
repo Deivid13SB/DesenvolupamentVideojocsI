@@ -33,6 +33,10 @@ public:
 	bool SaveState();
 	bool LoadState();
 	void SetCheckpoint(Vector2D position);
+	int lives = 3;  // Número inicial de vidas
+	SDL_Texture* heartTexture = nullptr;
+	bool gameOver = false;
+	bool livesChanged = false;
 
 public:
 
@@ -46,6 +50,10 @@ public:
 	bool isDead;
 
 	void Respawn();
+	void LoseLife();
+	int GetLives() const { return lives; }
+	bool IsGameOver() const { return gameOver; }
+
 
 	//Audio fx
 	int pickCoinFxId;
